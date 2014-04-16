@@ -18,7 +18,7 @@ The project targets Windows. It should also be easy to target Linux.
    
 Requirements:
 
-	FTD2XX.dll:
+	FTD2XX.dll: The dll file must be in the same directory as sld_interface.py
 	  http://www.ftdichip.com/Drivers/D2XX.htm)
 	  
 	Altera Quartus:
