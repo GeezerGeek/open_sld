@@ -1,12 +1,14 @@
 #------------------------------------------------------------------------------
 #
-#   245_decode.py - 4/16/14
+#   245_decode.py
 #
 #   Decode captured FT245 data
 #
+#   Version 0.0.1  -  4/25/14
+
 #------------------------------------------------------------------------------
 
-import csv, pprint
+import csv
 
 #------------------------------------------------------------------------------
 #
@@ -26,8 +28,6 @@ signal_names = [
     'UDR',
     'WR'
     ]
-
-# pprint.pprint(jtag_states)
 
 cpld_tck = 0
 cpld_tdi = 0
@@ -51,14 +51,9 @@ def cvs(file_name):
     csv_reader = csv.reader(csvfile, delimiter=',', quotechar='|')
     for row in csv_reader:
         
-#         print row
         # Get this into a more usable format
         dc = DataContainer(row)
-        
-#         print 'step:', dc.step
-#         if int(dc.step) == 21:
-#             break
-        
+                
         yield dc 
         
     csvfile.close()
@@ -73,7 +68,6 @@ class DataContainer(object):
         
         # Fields of cvs_row become attributes
         d = dict((key, value.strip()) for (key, value) in zip(signal_names, cvs_row))
-#         pprint.pprint(d)
         self.__dict__.update(d)
         
         self.cvs_row = cvs_row        
@@ -136,7 +130,6 @@ class CPLD(object):
                         self.mode = CPLD_BIT
                         print 'EXIT START at ', new_byte.now
                     continue
-
                 
                 if self.mode == CPLD_BIT:               
                                         
@@ -215,9 +208,7 @@ class SLD_Controller(object):
              'update_ir': ['idle', 'select_dr']
         }
     
-        self.state = start
-#         self.state = 'shift_ir'
-        
+        self.state    = start        
         self.ir_shift = ''
         self.dr_shift = ''
         
@@ -235,11 +226,12 @@ class SLD_Controller(object):
         
         if self.state == 'shift_ir':
             self.ir_shift = tdi + self.ir_shift
-#             print '  ir_shift: %s' % self.ir_shift
+#             print '  ir_shift: %s' % self.ir_shift, int(tms)
             
-        elif self.state == 'shift_dr':
+        elif (self.state == 'shift_dr'):
+            
             self.dr_shift = tdi + self.dr_shift
-#             print '  dr_shift: %s' % self.dr_shift
+#             print '    dr_shift: %s %s at  %.1f' % (self.dr_shift, tms, t)
                                       
     #----
         
@@ -263,15 +255,20 @@ class SLD_Controller(object):
                 
             elif self.state == 'update_ir':
                 self.ir = self.ir_shift
-                print 'UPDATE %d ir bits to %s' % (len(self.ir), self.ir)
+                if len(self.ir):
+                    print 'UPDATE %d ir bits to %s' % (len(self.ir), self.ir)
+                else:
+                    print
 
                     
 #------------------------------------------------------------------------------
 #
 # Main
 
-# pld = CPLD(cvs('ft_245_data.csv'), CPLD_START)
-pld = CPLD(cvs('generated.csv'), CPLD_BIT)
+# This .csv file is broken!!
+#pld = CPLD(cvs('ft_245_data.csv'), CPLD_START)
+
+pld = CPLD(cvs('test2.csv'), CPLD_BIT)
 
 sld = SLD_Controller(1)
     
@@ -282,7 +279,4 @@ for event in pld.run():
         sld.TCK_rise(event)
     else:
         sld.TCK_fall(event)
-        
-#     if t > 65.0:
-#         break
-        
+                
